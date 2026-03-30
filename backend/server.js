@@ -2,40 +2,54 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const bookRoutes = require('./routes/bookRoutes'); // Path to your router
+const bookRoutes = require('./routes/bookRoutes');
 
 const app = express();
 
 // 1. GLOBAL MIDDLEWARE
-app.use(cors()); // Allows your frontend to talk to this backend
-app.use(morgan('dev')); // Logs all requests to the terminal for debugging
-app.use(express.json()); // Essential: Parses incoming JSON bodies
+// Updated CORS to allow your specific Vercel frontend to communicate with Render
+app.use(cors({
+    origin: ['https://book-shelf-theta-six.vercel.app', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
+
+app.use(morgan('dev'));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 2. API ROUTES
-// All book-related logic is now prefixed with /api/books
 app.use('/api/books', bookRoutes);
 
 // 3. HEALTH CHECK & ROOT ROUTE
 app.get('/', (req, res) => {
-    res.json({ message: "Welcome to the Personal Library API", status: "Running" });
+    res.json({ 
+        message: "Welcome to the Personal Library API", 
+        status: "Running",
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
 // 4. GLOBAL ERROR HANDLER
-// Catch-all for any errors that weren't caught in controllers
 app.use((err, req, res, next) => {
     console.error("🔥 Server Error:", err.stack);
     res.status(500).json({
         success: false,
         message: "Something went wrong on the server",
+        // Only show detailed error stack in development mode
         error: process.env.NODE_ENV === 'development' ? err.message : {}
     });
 });
 
 // 5. SERVER STARTUP
-const PORT = process.env.PORT || 5000;
+// Render sets the PORT automatically; default to 10000 if not found
+const PORT = process.env.PORT || 10000;
+const serverUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://book-shelf-ncza.onrender.com' 
+    : `http://localhost:${PORT}`;
+
 app.listen(PORT, () => {
     console.log(`\n📚 Library Backend Live`);
-    console.log(`📍 URL: http://localhost:${PORT}`);
-    console.log(`🚀 Try: http://localhost:${PORT}/api/books\n`);
+    console.log(`📍 Status: Online`);
+    console.log(`🚀 API Endpoint: ${serverUrl}/api/books\n`);
 });
