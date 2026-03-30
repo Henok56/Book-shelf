@@ -1,4 +1,4 @@
-import api from '../Api'; // This correctly looks one level up for api.js
+import api from '../api'; // This correctly looks one level up for api.js
 
 // 1. Fetch all books
 export const getBooks = async (params = {}) => {
