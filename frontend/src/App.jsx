@@ -1,57 +1,75 @@
 import React, { useState, useEffect } from "react";
+import api from "./api"; // Import your smart Axios instance
 import "./styles/book.css";
 
 function BookLibrary() {
   const [books, setBooks] = useState([]);
-  const [view, setView] = useState("dashboard"); // 'dashboard' or 'add'
+  const [view, setView] = useState("dashboard");
   const [editingId, setEditingId] = useState(null); 
   const [tempPages, setTempPages] = useState(0);
   const [form, setForm] = useState({ title: "", author: "", genre: "", totalPages: "", currentPage: 0 });
   const [error, setError] = useState("");
 
+  // 1. FETCH BOOKS
   const fetchBooks = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/books");
-      const data = await res.json();
+      // No need for 'http://localhost:5000', api.js handles it!
+      const data = await api.get("/books");
       setBooks(Array.isArray(data) ? data : data.data || []);
-    } catch (err) { setError("The Library Scroll is unreachable."); }
+    } catch (err) { 
+      setError("The Library Scroll is unreachable."); 
+      console.error(err);
+    }
   };
 
   useEffect(() => { fetchBooks(); }, []);
 
-  // UPDATE PAGES LOGIC
+  // 2. UPDATE PAGES LOGIC
   const handleUpdatePages = async (id, totalPages) => {
-    const pages = Math.max(0, Math.min(tempPages, totalPages)); 
-    const isNowRead = pages === totalPages;
+    try {
+      const pages = Math.max(0, Math.min(tempPages, totalPages)); 
+      const isNowRead = pages === totalPages;
 
-    await fetch(`http://localhost:5000/api/books/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPage: pages, is_read: isNowRead }),
-    });
-    setEditingId(null);
-    fetchBooks();
+      // Changed from fetch to api.put and fixed the URL path
+      await api.put(`/books/${id}`, { 
+        currentPage: pages, 
+        is_read: isNowRead 
+      });
+      
+      setEditingId(null);
+      fetchBooks();
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
   };
 
-  // ADD NEW BOOK LOGIC
+  // 3. ADD NEW BOOK LOGIC
   const handleAddBook = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/books", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          ...form, 
-          totalPages: parseInt(form.totalPages),
-          currentPage: parseInt(form.currentPage) || 0 
-        }),
+      await api.post("/books", { 
+        ...form, 
+        totalPages: parseInt(form.totalPages),
+        currentPage: parseInt(form.currentPage) || 0 
       });
-      if (res.ok) {
-        setForm({ title: "", author: "", genre: "", totalPages: "", currentPage: 0 });
-        fetchBooks();
-        setView("dashboard");
-      }
-    } catch (err) { setError("Summoning failed."); }
+      
+      setForm({ title: "", author: "", genre: "", totalPages: "", currentPage: 0 });
+      fetchBooks();
+      setView("dashboard");
+    } catch (err) { 
+      setError("Summoning failed."); 
+      console.error(err);
+    }
+  };
+
+  // 4. DELETE LOGIC
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/books/${id}`);
+      fetchBooks();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   const total = books.length;
@@ -61,7 +79,6 @@ function BookLibrary() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100">
       
-      {/* NAV BAR */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-black tracking-tighter text-indigo-600 flex items-center gap-2">
@@ -75,8 +92,8 @@ function BookLibrary() {
       </nav>
 
       <main className="max-w-6xl mx-auto p-6 md:p-12">
-        
-        {/* VIEW 1: DASHBOARD */}
+        {error && <div className="bg-red-50 text-red-500 p-4 rounded-xl mb-6 text-center font-bold">{error}</div>}
+
         {view === "dashboard" && (
           <div className="animate-view space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -131,7 +148,7 @@ function BookLibrary() {
                         )}
                       </td>
                       <td className="px-8 py-6 text-right">
-                        <button onClick={async () => { await fetch(`http://localhost:5000/api/books/${book.id}`, { method: 'DELETE' }); fetchBooks(); }} className="text-slate-200 hover:text-red-500 p-2 transition-colors">✕</button>
+                        <button onClick={() => handleDelete(book.id)} className="text-slate-200 hover:text-red-500 p-2 transition-colors">✕</button>
                       </td>
                     </tr>
                   ))}
@@ -141,7 +158,6 @@ function BookLibrary() {
           </div>
         )}
 
-        {/* VIEW 2: ADD BOOK */}
         {view === "add" && (
           <div className="animate-view max-w-xl mx-auto">
             <div className="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 relative overflow-hidden">
