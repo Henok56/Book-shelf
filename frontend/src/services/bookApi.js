@@ -1,4 +1,4 @@
-import api from '../api'; // This correctly looks one level up for api.js
+import api from '../api'; // Goes up one folder to find api.js
 
 // 1. Fetch all books
 export const getBooks = async (params = {}) => {
@@ -10,7 +10,7 @@ export const addBook = async (bookData) => {
     return await api.post('/books', bookData);
 };
 
-// 3. Update a book (Fixed URL syntax with /)
+// 3. Update a book (Fixed URL with / instead of :)
 export const updateBook = async (id, updateData) => {
     return await api.put(`/books/${id}`, updateData);
 };
