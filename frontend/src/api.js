@@ -1,6 +1,5 @@
-import axios from 'axios';
+import axios from 'axios'; // <--- CRITICAL: Don't forget this!
 
-// This handles the switch between your local machine and Render
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -10,14 +9,10 @@ const api = axios.create({
     },
 });
 
-// Response interceptor to simplify data access (returns response.data automatically)
+// Add a response interceptor so your services get the data directly
 api.interceptors.response.use(
     (response) => response.data,
-    (error) => {
-        console.error("📡 API Error:", error.response?.data?.message || error.message);
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// CRITICAL: This was the cause of your "Missing Export" error
 export default api;
