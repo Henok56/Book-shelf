@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-magic-indigo: #6366f1;
+  --color-magic-emerald: #10b981;
+}
+
+/* Page Entry Animation */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-view {
+  animation: slideUpFade 0.4s ease-out forwards;
+}
+
+/* Smooth Progress Fill */
+.bar-transition {
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Interactive Table Rows */
+.table-row-hover:hover {
+  background-color: rgba(99, 102, 241, 0.03);
+  transition: background 0.2s;
+}
+
+/* Clean Number Inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  outline: none;
+}

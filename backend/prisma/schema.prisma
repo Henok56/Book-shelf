@@ -1,0 +1,24 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Book {
+  id              Int      @id @default(autoincrement())
+  title           String
+  author          String
+  is_read         Boolean  @default(false)
+  
+  // --- New Attributes ---
+  rating          Int?     // User rating (e.g., 1-5 stars). Optional until read.
+  genre           String?  // Category (e.g., Fiction, Tech, History)
+  totalPages      Int      @default(0) // Total pages in the book
+  currentPage     Int      @default(0) // Tracks reading progress
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt // Automatically tracks the last edit
+}
