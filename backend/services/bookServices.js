@@ -37,11 +37,29 @@ const bookService = {
 
   // NEW: Update Progress Function
   updateProgress: async (id, pagesRead) => {
-    return await prisma.book.update({
-      where: { id: parseInt(id) },
-      data: { currentPage: parseInt(pagesRead) }
-    });
-  },
+    // 1. Ensure the ID is a valid integer
+    const bookId = parseInt(id);
+    const progress = parseInt(pagesRead);
+
+    if (isNaN(bookId) || isNaN(progress)) {
+        throw new Error("Invalid ID or Pages Read value provided.");
+    }
+
+    // 2. Perform the update
+    try {
+        return await prisma.book.update({
+            where: { id: bookId },
+            data: { 
+                currentPage: progress,
+                // Optional: Update status to 'COMPLETED' if pagesRead matches totalPages
+                // status: progress >= book.totalPages ? 'COMPLETED' : 'READING'
+            }
+        });
+    } catch (error) {
+        console.error("Prisma Update Error:", error.message);
+        throw error;
+    }
+},
 
   // 5. Delete a book
   deleteBook: async (id) => {
