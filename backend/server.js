@@ -8,12 +8,29 @@ const app = express();
 
 // 1. GLOBAL MIDDLEWARE
 // Updated CORS to allow your specific Vercel frontend to communicate with Render
+const allowedOrigins = [
+    'https://book-shelf-virid.vercel.app',
+    /\.vercel\.app$/  // This allows ANY subdomain of vercel.app
+];
+
 app.use(cors({
-    origin: [
-        'https://book-shelf-virid.vercel.app',
-        'https://book-shelf-hqvkyb78z-henok56s-projects.vercel.app'
-    ],
-    methods: ['GET','POST','PUT','DELETE']
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.some((allowed) => {
+            if (allowed instanceof RegExp) return allowed.test(origin);
+            return allowed === origin;
+        });
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
 }));
 app.use(morgan('dev'));
 app.use(express.json());
