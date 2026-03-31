@@ -9,11 +9,12 @@ const app = express();
 // 1. GLOBAL MIDDLEWARE
 // Updated CORS to allow your specific Vercel frontend to communicate with Render
 app.use(cors({
-    origin: ['https://book-shelf-theta-six.vercel.app', 'http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
+    origin: [
+        'https://book-shelf-virid.vercel.app',
+        'https://book-shelf-hqvkyb78z-henok56s-projects.vercel.app'
+    ],
+    methods: ['GET','POST','PUT','DELETE']
 }));
-
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
