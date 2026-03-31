@@ -47,13 +47,23 @@ exports.createBook = async (req, res) => {
 };
 
 // 4. Update book
+// 4. Update book progress
 exports.updateBook = async (req, res) => {
   try {
-    const updatedBook = await bookService.updateBook(req.params.id, req.body);
+    const { id } = req.params;
+    
+    // We extract ONLY the number from the body
+    // This matches the "currentPage" field in your Prisma schema
+    const pagesRead = req.body.currentPage; 
+
+    // CALL THE CORRECT SERVICE: updateProgress (not updateBook)
+    const updatedBook = await bookService.updateProgress(id, pagesRead);
+    
     res.status(200).json(updatedBook);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ message: 'Failed to update book' });
+    // This logs the specific reason (like "Invalid ID") to your Render console
+    console.error("🔥 Update Error:", err.message);
+    res.status(400).json({ message: err.message });
   }
 };
 
